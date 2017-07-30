@@ -5,6 +5,9 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :trackable, :validatable, :omniauthable, :omniauth_providers => [:facebook]
   has_many :plans_users, class_name: PlansUsers
   has_many :plans, through: :plans_users
+  
+  has_many :drill_users, class_name: DrillUsers
+  has_many :drills, through: :drill_users
 
   def self.from_omniauth(auth)
       where(provider: auth.provider, uid: auth.uid).first_or_create do |user|

@@ -18,6 +18,8 @@ Rails.application.routes.draw do
   get 'drill/create'
 
   get 'drill/show'
+  
+  post 'drill/finish', as: 'drill_finish'
 
   get 'plan/create'
 

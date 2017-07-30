@@ -1,39 +1,274 @@
-<h1> Drill for <%= @drill.id %>, started at <%= @drill.start_time %> </h1
-<div class="row">
-  <div class="col-md-9">
-    <div id="map" style="width: 90%; height: 400px; background: grey" />
+<h1> Drill for <%= @plan.name %>, started at <%= @drill.start_time %> </h1
+  <link rel="stylesheet" type="text/css" href="https://js.cit.api.here.com/v3/3.0/mapsjs-ui.css" />
+  <script type="text/javascript" src="https://js.cit.api.here.com/v3/3.0/mapsjs-core.js"></script>
+  <script type="text/javascript" src="https://js.cit.api.here.com/v3/3.0/mapsjs-service.js"></script>
+  <script type="text/javascript" src="https://js.cit.api.here.com/v3/3.0/mapsjs-ui.js"></script>
+  <script type="text/javascript" src="https://js.cit.api.here.com/v3/3.0/mapsjs-mapevents.js"></script>
+  <script type="text/javascript" charset="UTF-8" src="https://js.cit.api.here.com/v3/3.0/mapsjs-pano.js"></script>
+  <script type="text/javascript" charset="UTF-8" src="https://js.cit.api.here.com/v3/3.0/mapsjs-clustering.js"></script>
+  <script type="text/javascript" charset="UTF-8" src="https://js.cit.api.here.com/v3/3.0/mapsjs-data.js"></script>
+  
+  <div class="row">
+  
+    <div class="col-md-8">
+      <div id="map" style="width: 90%; height: 400px; background: grey" />
+    </div>
+    </div>
+    <div class="col-md-4">
+      <% @users.each do |user| %>
+        <%= user.user.email %>
+        <%= button_to "Mark safe", drill_finish_path(drill_id: @drill.id) %>
+      <% end %>
+    </div>
   </div>
-  <div class="col-md-1">
-    <%= form_for :start_location do |f| %>
-      Location name: <%= f.text_field :name %>
-      <%= number_field(:start_location, :lat, step: :any) %>
-      <%= number_field(:start_location, :long, step: :any) %>
-      <%= f.submit "Submit", html: {class: "btn btn-default" } %>
+  
+  <%= render partial: 'reward_modals/first_plan' %>
+  
+    <script  type="text/javascript" charset="UTF-8" >
+  
+    function setUpClickListener(map) {
+      // Attach an event listener to map display
+      // obtain the coordinates and display in an alert box.
+      map.addEventListener('tap', function (evt) {
+        var coord = map.screenToGeo(evt.currentPointer.viewportX,
+                evt.currentPointer.viewportY);
+                setSideformCoords(coord);
+      });
+    }
+  
+  function setSideformCoords(coord){
+    document.getElementById("start_location_lat").value = coord.lat;
+    document.getElementById("start_location_long").value = coord.lng;
+    document.getElementById("meet_location_lat").value = coord.lat;
+    document.getElementById("meet_location_long").value = coord.lng;
+  }
+  
+  /**
+   * Creates a new marker and adds it to a group
+   * @param {H.map.Group} group       The group holding the new marker
+   * @param {H.geo.Point} coordinate  The location of the marker
+   * @param {String} html             Data associated with the marker
+   */
+   function addMarkerToGroup(group, coordinate, html, icon) {
+     var marker = new H.map.Marker(coordinate,
+            { icon: new H.map.Icon(icon)});
+     // add custom data to the marker
+     marker.setData(html);
+     group.addObject(marker);
+   }
+  
+  function infoBubbleHTML(name, description){
+  return '<h1>' + name + '</h1>' +
+        '<p> ' + description + ' </p>';
+  }
+  
+  
+  // Loading GeoJSON data to the map
+  function showGeoJSONData (map, file, layerName, fillColour, strokeColour) {
+  
+    // Create GeoJSON reader which will download the specified file.
+    // Shape of the file was obtained by using HERE Geocoder API.
+    // It is possible to customize look and feel of the objects.
+    var reader = new H.data.geojson.Reader(file, {
+      // This function is called each time parser detects a new map object
+      style: function (mapObject) {
+        // We can style parsed geo objects using setStyle method like this:
+        if (mapObject instanceof H.map.Polygon) {
+          mapObject.setStyle({
+            fillColor: fillColour,
+            strokeColor: strokeColour,
+            lineWidth: 3
+          });
+        }
+      }
+    });
+  
+    // Start parsing the file
+    reader.parse();
+  
+    // Make layer from geojson file + name the layer
+    var layer = reader.getLayer();
+    layer.name=layerName;
+    // layer.addEventListener('tap', logEvent);
+  
+    // Add layer which shows GeoJSON data on the map
+    map.addLayer(layer);
+  }
+  
+  /**
+   * Add two markers showing the position of Liverpool and Manchester City football clubs.
+   * Clicking on a marker opens an infobubble which holds HTML content related to the marker.
+   * @param  {H.Map} map      A HERE Map instance within the application
+   */
+  function addInfoBubble(map) {
+    var group = new H.map.Group();
+  
+    map.addObject(group);
+  
+    // add 'tap' event listener, that opens info bubble, to the group
+    group.addEventListener('tap', function (evt) {
+      // event target is the marker itself, group is a parent event target
+      // for all objects that it contains
+      var bubble =  new H.ui.InfoBubble(evt.target.getPosition(), {
+        // read custom data
+        content: evt.target.getData()
+      });
+      // show info bubble
+      ui.addBubble(bubble);
+    }, false);
+  
+    <% @plan.start_locations.last(1).each do |sl| %>
+        addMarkerToGroup(group, {lat: <%= sl.lat %>, lng: <%= sl.long %>},
+        infoBubbleHTML("<%= sl.name.to_s %>", "<%= sl.description.to_s.strip %>"),
+        '/images/home_2.png'
+      );
     <% end %>
-  </div>
-</div>
-
-<script type="text/javascript" charset="UTF-8">
-// initialize communication with the platform
-var platform = new H.service.Platform({
-  app_id: 'DemoAppId01082013GAL',
-  app_code: 'AJKnXv84fjrb0KIHawS0Tg',
-  useCIT: true,
-  useHTTPS: true
-});
-var defaultLayers = platform.createDefaultLayers();
-
-// initialize a map - this map is centered over Europe
-var map = new H.Map(document.getElementById('map'),
-  defaultLayers.normal.map,{
-  center: {lat: <%= @plan.lat %>, lng: <%= @plan.long %>},
-  zoom: 3
-});
-
-// MapEvents enables the event system
-// Behavior implements default interactions for pan/zoom (also on mobile touch environments)
-var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
-
-// create default UI with layers provided by the platform
-var ui = H.ui.UI.createDefault(map, defaultLayers);
-</script>
+  
+    <% @plan.meet_locations.last(1).each do |ml| %>
+        addMarkerToGroup(group, {lat: <%= ml.lat %>, lng: <%= ml.long %>},
+        infoBubbleHTML("<%= ml.name.to_s %>", "<%= ml.description.to_s.strip %>"),
+        '/images/work_heart.png'
+      );
+    <% end %>
+    setUpClickListener(map);
+  }
+  
+  
+  function addManueversToMap(route){
+    var svgMarkup = '<svg width="18" height="18" ' +
+      'xmlns="http://www.w3.org/2000/svg">' +
+      '<circle cx="8" cy="8" r="8" ' +
+        'fill="#1b468d" stroke="white" stroke-width=".5"  />' +
+      '</svg>',
+      dotIcon = new H.map.Icon(svgMarkup, {anchor: {x:8, y:8}}),
+      group = new  H.map.Group(),
+      i,
+      j;
+  
+    // Add a marker for each maneuver
+    for (i = 0;  i < route.leg.length; i += 1) {
+      for (j = 0;  j < route.leg[i].maneuver.length; j += 1) {
+        // Get the next maneuver.
+        maneuver = route.leg[i].maneuver[j];
+        // Add a marker to the maneuvers group
+        var marker =  new H.map.Marker({
+          lat: maneuver.position.latitude,
+          lng: maneuver.position.longitude} ,
+          {icon: dotIcon});
+        marker.instruction = maneuver.instruction;
+        group.addObject(marker);
+      }
+    }
+  }
+  
+  function addRouteShapeToMap(route){
+    var strip = new H.geo.Strip(),
+      routeShape = route.shape,
+      polyline;
+  
+    routeShape.forEach(function(point) {
+      var parts = point.split(',');
+      strip.pushLatLngAlt(parts[0], parts[1]);
+    });
+  
+    polyline = new H.map.Polyline(strip, {
+      style: {
+        lineWidth: 4,
+        strokeColor: 'rgba(0, 128, 255, 0.4)'
+      },
+      arrows: { fillColor: 'blue', frequency: 4, width: 1, length: 0.7 }
+    });
+    // Add the polyline to the map
+    map.addObject(polyline);
+    // And zoom to its bounding rectangle
+     map.setViewBounds(polyline.getBounds(), true);
+  }
+  
+    function onSuccess(result) {
+      console.log(result);
+      var route = result.response.route[0];
+     /*
+      * The styling of the route response on the map is entirely under the developer's control.
+      * A representitive styling can be found the full JS + HTML code of this example
+      * in the functions below:
+      */
+      addRouteShapeToMap(route);
+      addManueversToMap(route);
+  
+    }
+  
+    function onError(error) {
+    alert('Ooops! Demo Gods are not with you...');
+  }
+  // Make route to safe zone
+    function calculateRouteFromAtoB (platform, start, midpoint, finish) {
+      var router = platform.getRoutingService(),
+        routeRequestParams = {
+          mode: 'shortest;pedestrian',
+          representation: 'display',
+          waypoint0: start,
+          waypoint1: midpoint,
+          waypoint2: finish,
+          routeattributes: 'waypoints,summary,shape,legs',
+          maneuverattributes: 'direction,action',
+          // avoidAreas: dangerArea
+        };
+  
+  
+      router.calculateRoute(
+        routeRequestParams,
+        onSuccess,
+        onError
+      );
+    }
+  
+  /**
+   * Boilerplate map initialization code starts below:
+   */
+  
+  // initialize communication with the platform
+  var platform = new H.service.Platform({
+    app_id: 'nna22Ktlg8CKoncAX21A',
+    app_code: 'Hh5Kpbs9vIDhdYMMmOUDEw',
+    useCIT: true,
+    useHTTPS: true
+  });
+  var defaultLayers = platform.createDefaultLayers();
+  
+  // initialize a map - this map is centered over Europe
+  var map = new H.Map(document.getElementById('map'),
+    defaultLayers.normal.map,{
+    center: {lat: <%= @plan.lat %>, lng: <%= @plan.long %>},
+    zoom: 14
+  });
+  
+  // MapEvents enables the event system
+  // Behavior implements default interactions for pan/zoom (also on mobile touch environments)
+  var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+  
+  // create default UI with layers provided by the platform
+  var ui = H.ui.UI.createDefault(map, defaultLayers);
+  
+  // Display Risk Zones
+  // showGeoJSONData(map,'<%=File.join(Rails.root, "app", "views", "plan", "WGTN_Tsunami_RiskWGS84.geojson") %>','Tsunami Risk','rgba(200, 0, 0, 0.2)','rgba(100, 50, 0, 0.5)');
+  showGeoJSONData(map,'/WGTN_Tsunami_RiskWGS84.geojson','Tsunami Risk','rgba(200, 0, 0, 0.2)','rgba(100, 50, 0, 0.5)');
+  showGeoJSONData(map,'/WGTN_FloodRisk_WGS84.geojson','Flood Risk','rgba(200, 0, 0, 0.2)','rgba(200, 100, 0, 0.5)');
+  
+  // Display Safer Zones
+  showGeoJSONData(map,'/WGTN_SportsGroundsWGS84.geojson','Meeting Point Option','rgba(0, 200, 200, 0.9)','rgba(50, 50, 100, 0.5)');
+  // showGeoJSONData(map,'/geojson/WGTN_SchoolsPtsWGS.geojson','Schools',rgba(100, 200, 0, 0.1)','rgba(0, 50, 100, 0.1)');
+  
+  console.log(map.getLayers().asArray());
+  
+  // Now use the map as required...
+  addInfoBubble(map);
+  
+  var start = '<%= "#{@plan.start_locations.last.lat},#{@plan.start_locations.last.long}" %>';
+  var finish = '<%= "#{@plan.meet_locations.last.lat},#{@plan.meet_locations.last.long}" %>';
+  
+  var khandallah_finish = '-41.2497167,174.7846162';
+  var wadestown_midpoint = '-41.261491,174.772370';
+  
+  calculateRouteFromAtoB(platform, start, wadestown_midpoint, finish);
+  
+  </script>
