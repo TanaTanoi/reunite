@@ -5,15 +5,12 @@ class PlanController < ApplicationController
 
   def show
     if params[:id].to_s == "plan_add" then
-      print("WAAAAAAADA")
       user = current_user
       z = PlansUsers.create(user_id: user.id, plan_id: params[:pid])
       # redirect_to Plan.find(params[:id])
       @plan = z.plan
-      byebug
-      redirect_to Plan.find(1)
+      redirect_to @plan
     else
-      print("NORMA")
       @plan = Plan.find_by_id(params[:id])
     end
   end
@@ -21,7 +18,11 @@ class PlanController < ApplicationController
   def plan_add
 
   end
-  
+
+  def create
+  end
+
   def new
+    @plan = Plan.new
   end
 end

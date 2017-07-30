@@ -19,7 +19,13 @@ Rails.application.routes.draw do
 
   get 'drill/show'
 
+  get 'plan/create'
+
   resources :plan
+
+  # post 'plan/create'
+
+  resources :users
 
   post 'plan/plan_add', as: 'plan_add'
 

@@ -8,6 +8,7 @@ html {
 
 body {
   height: 100%;
+  margin: 0% 1%;
 }
 
 .row-vert {
@@ -15,7 +16,7 @@ body {
   width: 100%;
   display: flex;
   align-items: center;
-  
+
   @media only screen and (max-width: 40em) {
     display: inline;
     align-items: center;
@@ -37,7 +38,7 @@ body {
 }
 
 .action-button {
-  
+
 }
 
 #top #login-modal .modal-header {

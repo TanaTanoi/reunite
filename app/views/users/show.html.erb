@@ -1,0 +1,8 @@
+<h1> Hello <%=  @user.email %> </h1>
+<h2> Plans </h2>
+<% @user.plans.each do |plan| %>
+  <p> <%= button_to "See Plan: #{plan.name}", "/plan/#{plan.id}", method: :get, class: "btn btn-default" %> </p>
+<% end %>
+<h2> Badges </h2>
+
+Here are your awards! <br>

@@ -8,7 +8,7 @@ class Plan < ApplicationRecord
   def lat
     x= nil
     if(start_locations.count + meet_locations.count > 0)
-    x = [start_locations.last, meet_locations.last].sort { |x,y|  y.created_at <=> x.created_at }.first
+    x = [start_locations.last, meet_locations.last].compact.sort { |x,y|  y.created_at <=> x.created_at }.first
     end
 
     if(x.nil?)
@@ -21,7 +21,7 @@ class Plan < ApplicationRecord
   def long
     x= nil
     if(start_locations.count + meet_locations.count > 0)
-    x = [start_locations.last, meet_locations.last].sort { |x,y|  x.created_at <=> y.created_at }.first
+      x = [start_locations.last, meet_locations.last].compact.sort { |x,y|  x.created_at <=> y.created_at }.first
     end
     if(x.nil?)
       174.7

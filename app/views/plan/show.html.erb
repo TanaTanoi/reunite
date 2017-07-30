@@ -67,7 +67,7 @@
         </div>
         <%= hidden_field(:start_location, :user_id, value: current_user.id) %>
         <%= hidden_field(:start_location, :plan_id, value: @plan.id) %>
-        <%= f.submit "Submit", class: "btn btn-default" %>
+        <%= f.submit "Set Home", class: "btn btn-default" %>
       <% end %>
     </div>
       <div id="safe" style="display:none">
@@ -99,7 +99,7 @@
             <%= number_field(:meet_location, :long, step: :any, class:"form-control") %>
           </div>
           <%= hidden_field(:meet_location, :plan_id, value: @plan.id) %>
-          <%= f.submit "Submit", class: "btn btn-default" %>
+          <%= f.submit "Set Safe Zone", class: "btn btn-default" %>
         <% end %>
       </div>
   </div>
@@ -345,13 +345,5 @@ console.log(map.getLayers().asArray());
 
 // Now use the map as required...
 addInfoBubble(map);
-
-var start = '<%= "#{@plan.start_locations.last.lat},#{@plan.start_locations.last.long}" %>';
-var finish = '<%= "#{@plan.meet_locations.last.lat},#{@plan.meet_locations.last.long}" %>';
-
-var khandallah_finish = '-41.2497167,174.7846162';
-var wadestown_midpoint = '-41.261491,174.772370';
-
-calculateRouteFromAtoB(platform, start, wadestown_midpoint, finish);
 
 </script>
