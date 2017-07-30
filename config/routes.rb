@@ -18,7 +18,7 @@ Rails.application.routes.draw do
   get 'drill/create'
 
   get 'drill/show'
-  
+
   post 'drill/finish', as: 'drill_finish'
 
   get 'plan/create'
@@ -27,7 +27,7 @@ Rails.application.routes.draw do
 
   # post 'plan/create'
 
-  resources :users
+  get 'users/show'
 
   post 'plan/plan_add', as: 'plan_add'
 
